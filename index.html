@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Avatar Flag</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<aside>
+  <h1>Avatar Flag</h1>
+  <div class="btns" id="loadBtns"><label class="btn">Load PNG<input id="file" type="file" accept="image/*" hidden></label></div>
+  <fieldset><legend>Output name</legend>
+    <label class="lbl" style="margin-top:2px">Name</label>
+    <input id="oname" type="text" value="sprite" spellcheck="false">
+    <label class="lbl">Template (Banner set)</label>
+    <input id="ofmt" type="text" value="a_{id}_{nombre}" spellcheck="false">
+  </fieldset>
+  <div class="tabs">
+    <button id="tSet" class="on">Banner set</button>
+    <button id="tMan" class="sec">Manual</button>
+    <button id="tRea" class="sec">Rebuild</button>
+  </div>
+
+  <!-- ===== SET DE BANNER (plantilla BCX) ===== -->
+  <div id="setPanel">
+    <label class="lbl">How to fit your image to the banner (260×146)</label>
+    <select id="fit">
+      <option value="stretch">Stretch (crops nothing)</option>
+      <option value="cover">Cover (crops the sides)</option>
+      <option value="contain">Contain (leaves transparent borders)</option>
+    </select>
+    <label class="lbl">Output size</label>
+    <select id="scale">
+      <option value="1">1× — exact in-game size (86×154…)</option>
+      <option value="2">2×</option>
+      <option value="3">3×</option>
+      <option value="4">4×</option>
+    </select>
+    <div class="btns" style="margin-top:12px">
+      <button id="zip" disabled>Download ZIP (8 PNG + avatar)</button>
+      <button id="each" class="sec" disabled>Download individually</button>
+    </div>
+    <div id="pick" hidden>
+      <div id="pickList"></div>
+      <div class="btns" style="margin-top:8px"><button id="pickGo">Download selected</button><button id="pickAll" class="sec">All</button><button id="pickNone" class="sec">None</button></div>
+    </div>
+  </div>
+
+  <!-- ===== MANUAL ===== -->
+  <div id="manPanel" hidden>
+    <div class="btns">
+      <button id="save">Download</button>
+      <button id="reset" class="sec">Reset</button>
+    </div>
+    <div id="ctrls"></div>
+    <fieldset><legend>View / output</legend>
+      <div class="row"><span>Zoom</span><input id="zoom" type="range" min="0.05" max="10" step="0.05" value="1"><span id="zoomv">1x</span></div>
+      <div class="btns"><button id="fit1" class="sec">Fit</button><button id="one" class="sec">100%</button></div>
+      <label class="chk"><input id="msmooth" type="checkbox" checked> Smoothing</label>
+      <label class="chk"><input id="crop" type="checkbox" checked> Trim transparency on download</label>
+    </fieldset>
+  </div>
+  <!-- ===== REARMAR ===== -->
+  <div id="reaPanel" hidden>
+    <p class="hint">Load the pieces exported from “Banner set” (up to 8). They are recognized by file name (Flag1a, Flag2b, Flag1bLong…) and un-curved back into the flat banner.</p>
+    <div class="btns"><label class="btn">Load pieces<input id="reaFiles" type="file" accept="image/*" multiple hidden></label><button id="reaClear" class="sec">Clear</button></div>
+    <label class="lbl">Where they overlap, prefer</label>
+    <select id="reaPref">
+      <option value="g1">Flag 1</option>
+      <option value="g2">Flag 2</option>
+      <option value="g3">Long pieces</option>
+    </select>
+    <div id="reaSlots"></div>
+    <div class="hint" style="margin-top:8px">If a piece is not recognized by name, click its slot to load it manually.</div>
+    <div class="btns" style="margin-top:12px"><button id="reaSave" disabled>Download banner</button></div>
+  </div>
+  <div id="info"></div>
+</aside>
+
+<main id="main">
+  <div id="setView">
+    <div id="setHint" class="hint" style="margin-top:30vh;text-align:center;font-size:17px">Drop a PNG here<br>or paste with Ctrl+V<br>or use “Load PNG”</div>
+    <div id="setOut" hidden>
+      <h2 style="margin-top:0">Flat banner being sliced</h2>
+      <div class="checker"><canvas id="flat"></canvas></div>
+      <h2>Flag 1</h2><div class="group" id="g1"></div>
+      <h2>Flag 2</h2><div class="group" id="g2"></div>
+      <h2>Long pieces</h2><div class="group" id="g3"></div>
+      <h2>Avatar</h2><div class="group" id="g4"></div>
+    </div>
+  </div>
+  <div id="manualView" hidden>
+    <div id="hint">Load a PNG to curve it by hand</div>
+    <div id="wrap" class="checker" hidden><canvas id="cv"></canvas></div>
+  </div>
+  <div id="reaView" hidden>
+    <div id="reaHint" class="hint" style="margin-top:30vh;text-align:center;font-size:17px">Drop the pieces here<br>(several at once)<br>or use “Load pieces”</div>
+    <div id="reaOut" hidden>
+      <h2 style="margin-top:0">Rebuilt banner</h2>
+      <div class="checker"><canvas id="reaCv"></canvas></div>
+    </div>
+  </div>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
