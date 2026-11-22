@@ -7,9 +7,6 @@ h1{font-size:20px;margin:0 0 12px}
 h2{font-size:16px;margin:22px 0 8px;color:#c9c9dc}
 fieldset{border:1px solid #3a3a48;border-radius:6px;margin:0 0 12px;padding:8px 10px 10px}
 legend{padding:0 4px;color:#b4b4c8;font-size:14px}
-.row{display:grid;grid-template-columns:84px 1fr 48px;align-items:center;gap:8px;margin:5px 0}
-.row span:last-child{text-align:right;color:#b4b4c8;font-variant-numeric:tabular-nums}
-input[type=range]{width:100%}
 input[type=text]{width:100%;background:#2a2a35;color:#f2f2f8;border:1px solid #444455;border-radius:5px;padding:7px;font:inherit}
 select{width:100%;background:#2a2a35;color:#f2f2f8;border:1px solid #444455;border-radius:5px;padding:7px;font:inherit}
 button,label.btn{display:inline-block;background:#5b49d6;color:#fff;border:0;border-radius:6px;padding:9px 13px;cursor:pointer;font:inherit}
@@ -24,9 +21,6 @@ button:disabled{opacity:.45;cursor:default}
 .hint{color:#8d8da6;font-size:14px;line-height:1.5}
 #info{color:#9a9ab4;font-size:14px;margin-top:8px}
 .checker{background:repeating-conic-gradient(#2a2a33 0 25%,#34343e 0 50%) 0 0/16px 16px;line-height:0;outline:1px solid #3a3a48;display:inline-block}
-#wrap{margin:auto;flex:none}
-#manualView{display:flex;min-height:100%}
-#hint{margin:auto;color:#8d8da6;text-align:center;line-height:1.7;font-size:17px}
 .group{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end}
 .piece{text-align:center;font-size:13px;color:#b4b4c8}
 .piece img,.piece canvas{display:block;cursor:pointer;image-rendering:auto}

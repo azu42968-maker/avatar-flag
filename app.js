@@ -32,7 +32,7 @@ function renderAvatar(fc, k) {
 }
 const quad = (u, a, m, b) => a*2*(u-.5)*(u-1) + m*(-4*u*(u-1)) + b*2*u*(u-.5);
 
-let srcImg = null, name = 'sprite', srcData = null;
+let srcImg = null, name = 'sprite';
 let flat = null;          // flat banner ImageData at scale k
 let pieceCanvases = [];   // [{id, canvas}]
 let mode = 'set';
@@ -192,137 +192,6 @@ $('zip').onclick = async () => {
 };
 
 /* =====================================================================
-   MANUAL MODE (sliders)
-   ===================================================================== */
-let PAD = 64;
-const GROUPS = [
-  ['Top edge (↕ px)',  [['tL','Left','o'],['tM','Center','o'],['tR','Right','o']]],
-  ['Bottom edge (↕ px)',  [['bL','Left','o'],['bM','Center','o'],['bR','Right','o']]],
-  ['Left edge (↔ px)', [['lT','Top','o'],['lM','Center','o'],['lB','Bottom','o']]],
-  ['Right edge (↔ px)',   [['rT','Top','o'],['rM','Center','o'],['rB','Bottom','o']]],
-  ['Vertical wave (↕)',      [['wvA','Amplitude','a'],['wvF','Frequency','f'],['wvP','Phase','p']]],
-  ['Horizontal wave (↔)',    [['whA','Amplitude','a'],['whF','Frequency','f'],['whP','Phase','p']]],
-  ['Panels (flag effect ↕)', [['pn','Panels','n'],['pA','Amplitude','a']]],
-];
-const S = {}, types = {};
-let fitMode = true;
-GROUPS.forEach(([title, items]) => {
-  const fs = document.createElement('fieldset');
-  fs.innerHTML = `<legend>${title}</legend>`;
-  items.forEach(([k, label, t]) => {
-    S[k] = 0; types[k] = t;
-    const r = document.createElement('div'); r.className = 'row';
-    r.innerHTML = `<span>${label}</span><input type="range" id="${k}" value="0"><span id="${k}v">0</span>`;
-    r.querySelector('input').addEventListener('input', e => { S[k] = +e.target.value; $(k+'v').textContent = S[k]; schedule(); });
-    fs.appendChild(r);
-  });
-  $('ctrls').appendChild(fs);
-});
-function setRanges() {
-  for (const k in types) {
-    const el = $(k), t = types[k];
-    if (t === 'o') { el.min = -PAD; el.max = PAD; el.step = 1; }
-    if (t === 'a') { el.min = 0;    el.max = PAD; el.step = 0.5; }
-    if (t === 'n') { el.min = 1;    el.max = 8;   el.step = 1; }
-    if (t === 'f') { el.min = 0;    el.max = 4;   el.step = 0.05; }
-    if (t === 'p') { el.min = 0;    el.max = 1;   el.step = 0.01; }
-    S[k] = Math.max(+el.min, Math.min(+el.max, S[k]));
-    el.value = S[k]; $(k+'v').textContent = S[k];
-  }
-}
-$('ctrls').lastElementChild.insertAdjacentHTML('beforeend',
-  '<label class="chk"><input id="pI" type="checkbox" checked> Invert alternate panels</label>');
-$('pI').onchange = schedule;
-setRanges();
-$('reset').onclick = () => { for (const k in S) S[k] = 0; $('pI').checked = true; setRanges(); schedule(); };
-$('msmooth').onchange = schedule;
-
-const wave = (u, A, F, P) => A * Math.sin(2*Math.PI*(F*u + P));
-function warp(src, sw, sh, vert, f1, f2, smooth) {
-  const lines = vert ? sw : sh, len = vert ? sh : sw, olen = len + 2*PAD;
-  const ow = vert ? sw : olen, oh = vert ? olen : sh;
-  const out = new Uint8ClampedArray(ow*oh*4);
-  const si = (l,p) => (vert ? p*sw + l : l*sw + p) * 4;
-  const oi = (l,p) => (vert ? p*ow + l : l*ow + p) * 4;
-  const cl = p => p < 0 ? 0 : p > len-1 ? len-1 : p;
-  for (let l = 0; l < lines; l++) {
-    const u = lines > 1 ? l/(lines-1) : 0;
-    const a = PAD + f1(u), b = PAD + len + f2(u), span = b - a;
-    if (span < 1) continue;
-    for (let p = Math.max(0, Math.ceil(a - .5)); p < olen && p + .5 <= b; p++) {
-      const s = (p + .5 - a) / span * len - .5, o = oi(l,p);
-      if (!smooth) {
-        const k = si(l, cl(Math.round(s)));
-        out[o]=src[k]; out[o+1]=src[k+1]; out[o+2]=src[k+2]; out[o+3]=src[k+3];
-        continue;
-      }
-      const p0 = Math.floor(s), f = s - p0, i0 = si(l, cl(p0)), i1 = si(l, cl(p0+1));
-      const a0 = src[i0+3]*(1-f), a1 = src[i1+3]*f, A = a0 + a1;
-      if (A > 0) for (let c = 0; c < 3; c++) out[o+c] = (src[i0+c]*a0 + src[i1+c]*a1) / A;
-      out[o+3] = A;
-    }
-  }
-  return { data: out, w: ow, h: oh };
-}
-let result = null, pending = false;
-function render() {
-  pending = false;
-  if (!srcData || mode !== 'man') return;
-  const { w, h, data } = srcData, smooth = $('msmooth').checked;
-  const pan = u => {
-    const n = Math.round(S.pn), x = u*n, i = Math.min(n-1, Math.floor(x));
-    const sg = ($('pI').checked && i % 2) ? -1 : 1;
-    return sg * S.pA * Math.cos(2*Math.PI*(x - i));
-  };
-  const top = u => quad(u, S.tL, S.tM, S.tR) + wave(u, S.wvA, S.wvF, S.wvP) + pan(u);
-  const bot = u => quad(u, S.bL, S.bM, S.bR) + wave(u, S.wvA, S.wvF, S.wvP) + pan(u);
-  const lef = v => quad(v, S.lT, S.lM, S.lB) + wave(v, S.whA, S.whF, S.whP);
-  const rig = v => quad(v, S.rT, S.rM, S.rB) + wave(v, S.whA, S.whF, S.whP);
-  const p1 = warp(data, w, h, true, top, bot, smooth);
-  const p2 = warp(p1.data, p1.w, p1.h, false, lef, rig, smooth);
-  result = p2;
-  const cv = $('cv');
-  if (cv.width !== p2.w || cv.height !== p2.h) { cv.width = p2.w; cv.height = p2.h; }
-  cv.getContext('2d').putImageData(new ImageData(p2.data, p2.w, p2.h), 0, 0);
-  applyZoom();
-  $('info').textContent = `Source ${w}×${h} → canvas ${p2.w}×${p2.h} (margin ${PAD}px)`;
-}
-function schedule() { if (!pending) { pending = true; requestAnimationFrame(render); } }
-function setZoom(z) {
-  z = Math.max(0.05, Math.min(10, z));
-  $('zoom').value = z; $('zoomv').textContent = (+z.toFixed(2)) + 'x';
-  const cv = $('cv');
-  cv.style.width = cv.width * z + 'px'; cv.style.height = cv.height * z + 'px';
-  cv.style.imageRendering = (z >= 2 && !$('msmooth').checked) ? 'pixelated' : 'auto';
-}
-function applyZoom() {
-  const cv = $('cv'), m = $('main');
-  if (fitMode) setZoom(Math.min((m.clientWidth - 40) / cv.width, (m.clientHeight - 40) / cv.height));
-  else setZoom(+$('zoom').value);
-}
-$('zoom').oninput = () => { fitMode = false; applyZoom(); };
-$('fit1').onclick = () => { fitMode = true; applyZoom(); };
-$('one').onclick = () => { fitMode = false; setZoom(1); };
-addEventListener('resize', () => { if (fitMode && srcData && mode === 'man') applyZoom(); });
-$('save').onclick = () => {
-  if (!result) return;
-  const { w, h, data } = result;
-  let x0 = 0, y0 = 0, x1 = w, y1 = h;
-  if ($('crop').checked) {
-    x0 = w; y0 = h; x1 = 0; y1 = 0;
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (data[(y*w + x)*4 + 3] > 0) {
-      if (x < x0) x0 = x; if (x >= x1) x1 = x + 1; if (y < y0) y0 = y; if (y >= y1) y1 = y + 1;
-    }
-    if (x1 <= x0) return;
-  }
-  const full = document.createElement('canvas'); full.width = w; full.height = h;
-  full.getContext('2d').putImageData(new ImageData(data, w, h), 0, 0);
-  const out = document.createElement('canvas'); out.width = x1 - x0; out.height = y1 - y0;
-  out.getContext('2d').drawImage(full, x0, y0, out.width, out.height, 0, 0, out.width, out.height);
-  saveBlob(out, baseName() + '_curved.png');
-};
-
-/* =====================================================================
    REBUILD — un-curves the pieces and reassembles the flat banner
    (exact inverse of renderPiece: each column between t and b is
    stretched back to the full banner height)
@@ -421,28 +290,22 @@ $('reaSave').onclick = () => saveBlob($('reaCv'), baseName() + '_banner.png');
 /* ---------- tabs and loading ---------- */
 function setMode(m) {
   mode = m;
-  $('tSet').className = m === 'set' ? 'on' : 'sec'; $('tMan').className = m === 'man' ? 'on' : 'sec'; $('tRea').className = m === 'rea' ? 'on' : 'sec';
-  $('setPanel').hidden = m !== 'set'; $('manPanel').hidden = m !== 'man'; $('reaPanel').hidden = m !== 'rea';
-  $('setView').hidden = m !== 'set'; $('manualView').hidden = m !== 'man'; $('reaView').hidden = m !== 'rea';
+  $('tSet').className = m === 'set' ? 'on' : 'sec'; $('tRea').className = m === 'rea' ? 'on' : 'sec';
+  $('setPanel').hidden = m !== 'set'; $('reaPanel').hidden = m !== 'rea';
+  $('setView').hidden = m !== 'set'; $('reaView').hidden = m !== 'rea';
   $('loadBtns').hidden = m === 'rea';
-  if (m === 'set') renderSet(); else if (m === 'man') schedule(); else rebuildRea();
+  if (m === 'set') renderSet(); else rebuildRea();
 }
-$('tSet').onclick = () => setMode('set'); $('tMan').onclick = () => setMode('man'); $('tRea').onclick = () => setMode('rea');
+$('tSet').onclick = () => setMode('set'); $('tRea').onclick = () => setMode('rea');
 
 function loadFile(f) {
   if (!f || !f.type.startsWith('image/')) return;
   const im = new Image();
   im.onload = () => {
     srcImg = im;
-    const c = document.createElement('canvas'); c.width = im.width; c.height = im.height;
-    const g = c.getContext('2d'); g.drawImage(im, 0, 0);
-    srcData = { w: im.width, h: im.height, data: g.getImageData(0, 0, im.width, im.height).data };
     name = (f.name || 'sprite').replace(/\.[^.]+$/, '') || 'sprite';
     $('oname').value = name;
-    PAD = Math.max(64, Math.round(Math.max(im.width, im.height) * 0.2));
-    setRanges(); fitMode = true;
-    $('hint').hidden = true; $('wrap').hidden = false;
-    if (mode === 'set') renderSet(); else schedule();
+    if (mode === 'set') renderSet();
   };
   im.src = URL.createObjectURL(f);
 }

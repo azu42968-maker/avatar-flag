@@ -18,7 +18,6 @@
   </fieldset>
   <div class="tabs">
     <button id="tSet" class="on">Banner set</button>
-    <button id="tMan" class="sec">Manual</button>
     <button id="tRea" class="sec">Rebuild</button>
   </div>
 
@@ -47,21 +46,7 @@
     </div>
   </div>
 
-  <!-- ===== MANUAL ===== -->
-  <div id="manPanel" hidden>
-    <div class="btns">
-      <button id="save">Download</button>
-      <button id="reset" class="sec">Reset</button>
-    </div>
-    <div id="ctrls"></div>
-    <fieldset><legend>View / output</legend>
-      <div class="row"><span>Zoom</span><input id="zoom" type="range" min="0.05" max="10" step="0.05" value="1"><span id="zoomv">1x</span></div>
-      <div class="btns"><button id="fit1" class="sec">Fit</button><button id="one" class="sec">100%</button></div>
-      <label class="chk"><input id="msmooth" type="checkbox" checked> Smoothing</label>
-      <label class="chk"><input id="crop" type="checkbox" checked> Trim transparency on download</label>
-    </fieldset>
-  </div>
-  <!-- ===== REARMAR ===== -->
+  <!-- ===== REBUILD ===== -->
   <div id="reaPanel" hidden>
     <p class="hint">Load the pieces exported from “Banner set” (up to 8). They are recognized by file name (Flag1a, Flag2b, Flag1bLong…) and un-curved back into the flat banner.</p>
     <div class="btns"><label class="btn">Load pieces<input id="reaFiles" type="file" accept="image/*" multiple hidden></label><button id="reaClear" class="sec">Clear</button></div>
@@ -89,10 +74,6 @@
       <h2>Long pieces</h2><div class="group" id="g3"></div>
       <h2>Avatar</h2><div class="group" id="g4"></div>
     </div>
-  </div>
-  <div id="manualView" hidden>
-    <div id="hint">Load a PNG to curve it by hand</div>
-    <div id="wrap" class="checker" hidden><canvas id="cv"></canvas></div>
   </div>
   <div id="reaView" hidden>
     <div id="reaHint" class="hint" style="margin-top:30vh;text-align:center;font-size:17px">Drop the pieces here<br>(several at once)<br>or use “Load pieces”</div>

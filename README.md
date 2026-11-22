@@ -7,7 +7,6 @@ No build step, no dependencies: open `index.html` in a browser.
 
 ## Features
 - **Banner set** – drop a wide banner (260×146 template), get the 8 curved flag pieces + the 128×128 avatar. Download as ZIP, or pick individual pieces.
-- **Manual** – curve any PNG with sliders (edges, waves, flag panels).
 - **Rebuild** – load the exported pieces and un-curve them back into the flat banner.
 
 ## Files
