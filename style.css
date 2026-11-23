@@ -30,3 +30,5 @@ button:disabled{opacity:.45;cursor:default}
 .slot.ok{border-color:#5b49d6}
 .slot b{font-weight:normal;color:#9a9ab4}
 [hidden]{display:none!important}
+
+#pos{width:100%}

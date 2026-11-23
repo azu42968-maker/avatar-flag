@@ -23,12 +23,16 @@
 
   <!-- ===== SET DE BANNER (plantilla BCX) ===== -->
   <div id="setPanel">
-    <label class="lbl">How to fit your image to the banner (260×146)</label>
+    <label class="lbl">Fit your image to the banner (16:9, any resolution)</label>
     <select id="fit">
+      <option value="cover">Keep aspect ratio (crop)</option>
       <option value="stretch">Stretch (crops nothing)</option>
-      <option value="cover">Cover (crops the sides)</option>
       <option value="contain">Contain (leaves transparent borders)</option>
     </select>
+    <div id="posWrap" hidden>
+      <label class="lbl">Crop position</label>
+      <input id="pos" type="range" min="0" max="100" value="50">
+    </div>
     <label class="lbl">Output size</label>
     <select id="scale">
       <option value="1">1× — exact in-game size (86×154…)</option>

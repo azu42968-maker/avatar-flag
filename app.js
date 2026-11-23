@@ -57,13 +57,14 @@ function drawScaled(img, sx, sy, sw, sh, dw, dh) {
 
 function buildFlat(k) {
   const W = BW*k, H = BH*k, fit = $('fit').value, iw = srcImg.width, ih = srcImg.height;
+  $('posWrap').hidden = !(fit === 'cover' && Math.abs(iw/ih - BW/BH) > 0.01);
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
   if (fit === 'stretch') {
     g.drawImage(drawScaled(srcImg, 0, 0, iw, ih, W, H), 0, 0);
   } else if (fit === 'cover') {
-    const s = Math.max(W/iw, H/ih), cw = W/s, ch = H/s;
-    g.drawImage(drawScaled(srcImg, (iw-cw)/2, (ih-ch)/2, cw, ch, W, H), 0, 0);
+    const s = Math.max(W/iw, H/ih), cw = W/s, ch = H/s, p = $('pos').value / 100;
+    g.drawImage(drawScaled(srcImg, (iw-cw)*p, (ih-ch)*p, cw, ch, W, H), 0, 0);
   } else {
     const s = Math.min(W/iw, H/ih), dw = Math.max(1, Math.round(iw*s)), dh = Math.max(1, Math.round(ih*s));
     g.drawImage(drawScaled(srcImg, 0, 0, iw, ih, dw, dh), Math.round((W-dw)/2), Math.round((H-dh)/2));
@@ -141,6 +142,7 @@ function saveBlob(canvas, fname) {
   canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
 }
 ['fit','scale'].forEach(id => $(id).onchange = renderSet);
+$('pos').oninput = renderSet;
 const picked = new Set();
 function drawPick() {
   const box = $('pickList'); box.innerHTML = '';
