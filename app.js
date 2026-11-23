@@ -57,14 +57,14 @@ function drawScaled(img, sx, sy, sw, sh, dw, dh) {
 
 function buildFlat(k) {
   const W = BW*k, H = BH*k, fit = $('fit').value, iw = srcImg.width, ih = srcImg.height;
-  $('posWrap').hidden = !(fit === 'cover' && Math.abs(iw/ih - BW/BH) > 0.01);
+  $('posWrap').hidden = fit !== 'cover';
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
   if (fit === 'stretch') {
     g.drawImage(drawScaled(srcImg, 0, 0, iw, ih, W, H), 0, 0);
   } else if (fit === 'cover') {
-    const s = Math.max(W/iw, H/ih), cw = W/s, ch = H/s, p = $('pos').value / 100;
-    g.drawImage(drawScaled(srcImg, (iw-cw)*p, (ih-ch)*p, cw, ch, W, H), 0, 0);
+    const z = $('zoom').value / 100, s = Math.max(W/iw, H/ih) * z, cw = W/s, ch = H/s;
+    g.drawImage(drawScaled(srcImg, (iw-cw)*$('posX').value/100, (ih-ch)*$('posY').value/100, cw, ch, W, H), 0, 0);
   } else {
     const s = Math.min(W/iw, H/ih), dw = Math.max(1, Math.round(iw*s)), dh = Math.max(1, Math.round(ih*s));
     g.drawImage(drawScaled(srcImg, 0, 0, iw, ih, dw, dh), Math.round((W-dw)/2), Math.round((H-dh)/2));
@@ -142,7 +142,28 @@ function saveBlob(canvas, fname) {
   canvas.toBlob(b => { const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = fname; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 1000); }, 'image/png');
 }
 ['fit','scale'].forEach(id => $(id).onchange = renderSet);
-$('pos').oninput = renderSet;
+['posX','posY','zoom'].forEach(id => $(id).oninput = renderSet);
+$('posReset').onclick = () => { $('posX').value = 50; $('posY').value = 50; $('zoom').value = 100; renderSet(); };
+
+/* Avatar area guide over the flat preview */
+(() => { const b = $('avBox').style; b.left = AVT.x*2 + 'px'; b.top = AVT.y*2 + 'px'; b.width = AVT.w*2 + 'px'; b.height = AVT.h*2 + 'px'; })();
+
+/* Drag the flat preview to move the banner */
+(() => {
+  const cv = $('flat'); let drag = null;
+  cv.style.cursor = 'grab'; cv.style.touchAction = 'none';
+  cv.onpointerdown = e => { if (!srcImg || $('fit').value !== 'cover') return; cv.setPointerCapture(e.pointerId); cv.style.cursor = 'grabbing'; drag = { x: e.clientX, y: e.clientY, px: +$('posX').value, py: +$('posY').value }; };
+  cv.onpointermove = e => {
+    if (!drag) return;
+    const iw = srcImg.width, ih = srcImg.height, z = $('zoom').value / 100, s = Math.max(BW/iw, BH/ih) * z;
+    const ox = iw - BW/s, oy = ih - BH/s;               // overflow in source px
+    const dx = (e.clientX - drag.x) / 2 / s, dy = (e.clientY - drag.y) / 2 / s;
+    if (ox > 0.5) $('posX').value = Math.max(0, Math.min(100, drag.px - dx / ox * 100));
+    if (oy > 0.5) $('posY').value = Math.max(0, Math.min(100, drag.py - dy / oy * 100));
+    renderSet();
+  };
+  cv.onpointerup = cv.onpointercancel = () => { drag = null; cv.style.cursor = 'grab'; };
+})();
 const picked = new Set();
 function drawPick() {
   const box = $('pickList'); box.innerHTML = '';

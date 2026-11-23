@@ -31,4 +31,9 @@ button:disabled{opacity:.45;cursor:default}
 .slot b{font-weight:normal;color:#9a9ab4}
 [hidden]{display:none!important}
 
-#pos{width:100%}
+#posX,#posY,#zoom{width:100%}
+#flatBox{position:relative;display:inline-block}
+#avBox{position:absolute;pointer-events:none;border:1px dashed rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.6);border-radius:56px}
+#avBox::before,#avBox::after{content:"";position:absolute;background:rgba(255,255,255,.35)}
+#avBox::before{left:50%;top:0;bottom:0;width:1px}
+#avBox::after{top:50%;left:0;right:0;height:1px}
